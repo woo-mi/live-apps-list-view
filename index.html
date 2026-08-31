@@ -11,22 +11,19 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; }
+  html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #FFFFFF; }
   body {
-    background: #FFFFFF;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    min-height: 100vh;
     font-family: "Inter", system-ui, -apple-system, sans-serif;
   }
   .stage {
     width: 1440px;
     height: 1000px;
-    position: relative;
+    position: fixed;
+    top: 0;
+    left: 0;
+    transform-origin: top left;
     overflow: hidden;
     background: #FFFFFF;
-    flex-shrink: 0;
   }
   /* the exported frame root fills the stage */
   .stage > div:first-child {
@@ -448,5 +445,17 @@
       </div>
     </div>
 </div>
+<script>
+(function () {
+  var stage = document.querySelector('.stage');
+  function fit() {
+    // cover: fill the viewport in both dimensions, uniform scale (no distortion)
+    var s = Math.max(window.innerWidth / 1440, window.innerHeight / 1000);
+    stage.style.transform = 'scale(' + s + ')';
+  }
+  window.addEventListener('resize', fit);
+  fit();
+})();
+</script>
 </body>
 </html>
