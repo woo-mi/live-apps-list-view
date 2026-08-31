@@ -449,8 +449,9 @@
 (function () {
   var stage = document.querySelector('.stage');
   function fit() {
-    // cover: fill the viewport in both dimensions, uniform scale (no distortion)
-    var s = Math.max(window.innerWidth / 1440, window.innerHeight / 1000);
+    // fill full width, uniform scale (no distortion, no cropped controls);
+    // any remainder below is the app's own white area, so it reads seamlessly
+    var s = window.innerWidth / 1440;
     stage.style.transform = 'scale(' + s + ')';
   }
   window.addEventListener('resize', fit);
