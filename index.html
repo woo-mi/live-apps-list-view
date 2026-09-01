@@ -466,9 +466,9 @@
   :root { --lv-hover: #26B5CE14; --lv-accent: #26B5CE; }   /* teal hover tint + accent, from Paper */
   .stage .lv-row { transition: background-color .12s ease; border-radius: 10px; }
   .stage .lv-row svg path, .stage .lv-row svg rect, .stage .lv-row svg circle, .stage .lv-row svg line { transition: stroke .12s ease, fill .12s ease; }
-  .stage .lv-row:hover { background-color: var(--lv-hover) !important; }
-  /* on hover the leading type icon (and, for folders, the chevron) turn teal; other icons stay gray */
-  /* default icons are gray; on hover they take the folder's own colour (teal fallback) */
+  /* default icons/background are neutral; on hover a row takes its folder's own
+     colour — both the icon stroke and a matching background tint (teal fallback) */
+  .stage .lv-row:hover { background-color: var(--lv-hover-bg, var(--lv-hover)) !important; }
   .stage .lv-row:hover .lv-typeicon [stroke] { stroke: var(--lv-hover-icon, var(--lv-accent)) !important; }
   .stage .lv-folder:hover .lv-chev path { fill: var(--lv-hover-icon, #26B5CE61) !important; }
   .stage .lv-folder { cursor: pointer; user-select: none; }
@@ -567,25 +567,31 @@
     var chev = chevWrap ? chevWrap.querySelector('svg') : null;
     if (chev) chev.classList.add('lv-chev');
 
-    // per-folder identity colour (from the Paper spec)
+    // per-folder identity colour + matching hover-background tint (colour at ~8% alpha)
     var label = row.children[1];             // the label text div
     var name = label ? label.textContent.trim() : '';
-    var color = null;
-    if (name === 'Dashboards') color = 'oklch(56.8% 0.159 275.2)';       // indigo
+    var GREY = 'oklch(47.6% 0.003 282.5)', GREY_BG = 'oklch(47.6% 0.003 282.5 / 8%)';
+    var color = null, bg = null;
+    if (name === 'Folders')         { color = GREY; bg = GREY_BG; }
+    else if (name === 'Dashboards') { color = 'oklch(56.8% 0.159 275.2)'; bg = 'oklch(56.8% 0.159 275.2 / 8%)'; }  // indigo
     else if (name === 'Slides') {
       slidesSeen++;
-      if (slidesSeen === 1) color = '#EB5757';                            // Slides = red
-      else { color = 'oklch(47.6% 0.003 282.5)'; if (label) label.textContent = 'Reports'; }  // 2nd "Slides" = Reports (gray)
+      if (slidesSeen === 1) { color = '#EB5757'; bg = 'rgba(235,87,87,0.08)'; }                                   // Slides = red
+      else { color = GREY; bg = GREY_BG; if (label) label.textContent = 'Reports'; }                              // 2nd "Slides" = Reports (gray)
     }
-    // the folder's colour is applied only on hover (default stays gray); the
-    // CSS var cascades to the folder row and (via the kids container) its nested rows
+    // Apps (and the app rows) keep the teal fallback
+
+    // colours apply only on hover (default stays neutral); the CSS vars cascade to
+    // the folder row and, via the kids container, its nested rows
     if (color) row.style.setProperty('--lv-hover-icon', color);
+    if (bg) row.style.setProperty('--lv-hover-bg', bg);
     folderRows.push(row);
 
-    // nested children container (built once, revealed on open) — inherits folder icon
+    // nested children container (built once, revealed on open) — inherits folder icon + hover colours
     var kids = document.createElement('div');
     kids.className = 'lv-children';
     if (color) kids.style.setProperty('--lv-hover-icon', color);
+    if (bg) kids.style.setProperty('--lv-hover-bg', bg);
     AV.forEach(function (spec) { kids.appendChild(makeNested(appTemplate, spec, tIcon, color)); });
     row.insertAdjacentElement('afterend', kids);
 
