@@ -1154,12 +1154,13 @@
       // Favorite already holds its 3 cards; toggle their visibility (starts open)
       var favHeader = sec.children[0], favCards = sec.children[1];
       var favChev = favHeader ? favHeader.querySelector('svg') : null;
+      var favDisplay = favCards ? (favCards.style.display || 'flex') : 'flex';   // remember the row layout so re-open restores flex, not block
       if (favChev) { favChev.style.rotate = '0deg'; favChev.style.transition = 'transform .15s ease'; favChev.style.transformOrigin = 'center'; favChev.style.transform = 'rotate(90deg)'; }
       if (favHeader) { favHeader.style.cursor = 'pointer'; favHeader.style.userSelect = 'none'; }
       var favOpen = true;
       if (favHeader) favHeader.addEventListener('click', function () {
         favOpen = !favOpen;
-        if (favCards) favCards.style.display = favOpen ? '' : 'none';
+        if (favCards) favCards.style.display = favOpen ? favDisplay : 'none';
         if (favChev) favChev.style.transform = favOpen ? 'rotate(90deg)' : 'none';
       });
       return;
