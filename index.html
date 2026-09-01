@@ -15,28 +15,23 @@
   body {
     font-family: "Inter", system-ui, -apple-system, sans-serif;
   }
+  /* zoom the whole 1440x1000 mock to fit any window, preserving proportions */
   .stage {
-    width: 100vw;
-    height: 100vh;
-    position: relative;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 1440px;
+    height: 1000px;
+    transform: translate(-50%, -50%) scale(var(--s, 1));
+    transform-origin: center center;
     overflow: hidden;
     background: #FFFFFF;
   }
-  /* exported frame root fills the viewport */
   .stage > div:first-child {
-    width: 100% !important;
-    height: 100% !important;
+    width: 1440px !important;
+    height: 1000px !important;
     position: relative !important;
   }
-  /* responsive shell: the header/toolbar/list already carry both left and
-     right anchors, so dropping the fixed width lets them stretch edge-to-edge */
-  .stage > div:first-child > div:nth-child(1) { height: 100% !important; }   /* nav rail: full viewport height */
-  .stage > div:first-child > div:nth-child(2) { width: auto !important; }    /* tabs + toolbar row */
-  .stage > div:first-child > div:nth-child(3) { width: auto !important; }    /* top header bar */
-  .stage > div:first-child > div:nth-child(4) { width: auto !important; }    /* app list */
-  /* pin the nav rail's bottom cluster (notifications + avatar) to the bottom edge */
-  .stage > div:first-child > div:nth-child(1) > div:nth-child(5) { top: auto !important; bottom: 52px !important; }
-  .stage > div:first-child > div:nth-child(1) > div:nth-child(6) { top: auto !important; bottom: 12px !important; }
 </style>
 <div class="stage">
 <div style="background-color: #FFFFFF; box-sizing: border-box; display: flex; flex-direction: column; font-family: Inter; font-size: 12px; font-synthesis: none; line-height: 16px; -moz-osx-font-smoothing: grayscale; overflow: clip; overflow-wrap: anywhere; position: relative; -webkit-font-smoothing: antialiased">
@@ -451,5 +446,17 @@
       </div>
     </div>
 </div>
+<script>
+(function () {
+  var stage = document.querySelector('.stage');
+  function fit() {
+    // contain: scale the whole mock to fit within the window, keep proportions
+    var s = Math.min(window.innerWidth / 1440, window.innerHeight / 1000);
+    stage.style.setProperty('--s', s);
+  }
+  window.addEventListener('resize', fit);
+  fit();
+})();
+</script>
 </body>
 </html>
