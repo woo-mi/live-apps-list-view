@@ -463,9 +463,13 @@
 </div>
 <style>
   /* ---- interaction layer (states 2-4) ---- */
-  :root { --lv-hover: #EDF4F5; }           /* row hover highlight (refined from Paper) */
-  .stage .lv-row { transition: background-color .12s ease; }
+  :root { --lv-hover: #26B5CE14; --lv-accent: #26B5CE; }   /* teal hover tint + accent, from Paper */
+  .stage .lv-row { transition: background-color .12s ease; border-radius: 10px; }
+  .stage .lv-row svg path, .stage .lv-row svg circle { transition: stroke .12s ease, fill .12s ease; }
   .stage .lv-row:hover { background-color: var(--lv-hover) !important; }
+  /* on hover the leading type icon (and, for folders, the chevron) turn teal; other icons stay gray */
+  .stage .lv-row:hover .lv-typeicon path { stroke: var(--lv-accent) !important; }
+  .stage .lv-folder:hover .lv-chev path { fill: #26B5CE61 !important; }
   .stage .lv-folder { cursor: pointer; user-select: none; }
   .stage .lv-chev { transition: transform .15s ease; transform-origin: 8px 8px; }
   .stage .lv-folder.lv-open .lv-chev { transform: rotate(90deg); }
@@ -473,9 +477,13 @@
   .stage .lv-children.lv-show { display: flex; }
   .stage .lv-holder { right: 0 !important; width: auto !important; }
   .stage .lv-holder > *:nth-child(2) { margin-left: auto !important; }
-  .stage .lv-nested { width: auto !important; margin-left: 28px; }
+  .stage .lv-nested { width: auto !important; }               /* nested titles align with top-level (per Paper) */
   .stage .lv-fav { opacity: 0; transition: opacity .12s ease; }
   .stage .lv-nested:hover .lv-fav { opacity: 1; }
+  /* an expanded folder shows its icon + chevron in the teal active state, with a divider under the header */
+  .stage .lv-folder.lv-open .lv-typeicon path { stroke: var(--lv-accent) !important; }
+  .stage .lv-folder.lv-open .lv-chev path { fill: #26B5CE61 !important; }
+  .stage .lv-folder.lv-open::after { content: ''; position: absolute; left: 127px; right: 0; top: 18px; height: 1px; background: #D4D4D4; }
 </style>
 <script>
 (function () {
@@ -485,12 +493,12 @@
 
   // avatar palette for the nested app rows (letter, bg, border, text)
   var AV = [
-    { l: 'S', bg: '#FFEED3', bd: '#ECC7A5', fg: '#A83E00' },
-    { l: 'P', bg: '#EDE4FB', bd: '#D3C4F0', fg: '#6B3AC9' },
-    { l: 'P', bg: '#EDE4FB', bd: '#D3C4F0', fg: '#6B3AC9' },
-    { l: 'D', bg: '#FBE0EE', bd: '#F0C2DC', fg: '#B0307A' },
-    { l: 'J', bg: '#E6F3D9', bd: '#CDE4B5', fg: '#4C7A1E' },
-    { l: 'J', bg: '#E6F3D9', bd: '#CDE4B5', fg: '#4C7A1E' }
+    { l: 'S', bg: '#FFEED3', bd: '#ECC7A5', fg: '#A83E00' },   // orange
+    { l: 'P', bg: '#E0F0FF', bd: '#AFD3EB', fg: '#026AA2' },   // blue
+    { l: 'P', bg: '#E0F0FF', bd: '#AFD3EB', fg: '#026AA2' },
+    { l: 'D', bg: '#FFE3EC', bd: '#F2B1C9', fg: '#C2004E' },   // pink
+    { l: 'J', bg: '#EBF6D6', bd: '#C8D7AD', fg: '#4B6B1B' },   // green
+    { l: 'J', bg: '#EBF6D6', bd: '#C8D7AD', fg: '#4B6B1B' }
   ];
 
   function tagHolder(row) {
@@ -504,15 +512,17 @@
     clone.classList.add('lv-row', 'lv-nested');
     clone.classList.remove('lv-approw');
     tagHolder(clone);
-    // favourite star: hidden until hover, shown as an outline
+    // favourite star: hidden until hover, shown as a gray outline (white backing behind a #666 outline)
     var star = clone.querySelector(':scope > svg');
     if (star) {
       star.classList.add('lv-fav');
       var paths = star.querySelectorAll('path');
-      if (paths[1]) paths[1].style.fill = 'none';           // drop the solid fill -> outline
-      if (paths[1]) paths[1].setAttribute('stroke', '#9AA0A6');
-      if (paths[1]) paths[1].setAttribute('stroke-width', '1');
+      if (paths[1]) paths[1].setAttribute('fill', '#FFFFFF');
     }
+    // leading app icon -> turns teal on hover
+    var nIcon = clone.lastElementChild && clone.lastElementChild.children[0]
+      ? clone.lastElementChild.children[0].querySelector('svg') : null;
+    if (nIcon) nIcon.classList.add('lv-typeicon');
     // avatar monogram
     var holder = clone.lastElementChild;
     var avatar = holder ? holder.querySelector('div[style*="border-radius: 50%"]') : null;
@@ -532,10 +542,15 @@
     if (i < 2) {                             // the two starred app rows
       row.classList.add('lv-approw');
       tagHolder(row);
+      var aIcon = row.lastElementChild && row.lastElementChild.children[0]
+        ? row.lastElementChild.children[0].querySelector('svg') : null;
+      if (aIcon) aIcon.classList.add('lv-typeicon');
       return;
     }
     // collapsible folder rows
     row.classList.add('lv-folder');
+    var tIcon = row.querySelector(':scope > svg');   // leading folder/type icon -> teal on hover/open
+    if (tIcon) tIcon.classList.add('lv-typeicon');
     var chevWrap = row.lastElementChild;     // disclosure container at left:0
     var chev = chevWrap ? chevWrap.querySelector('svg') : null;
     if (chev) chev.classList.add('lv-chev');
