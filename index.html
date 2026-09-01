@@ -41,10 +41,12 @@
   .stage[data-view="list"] > div:first-child > div:nth-child(1) > div:nth-child(5) { top: auto !important; bottom: 52px !important; }
   .stage[data-view="list"] > div:first-child > div:nth-child(1) > div:nth-child(6) { top: auto !important; bottom: 12px !important; }
   /* ===== GRID view layout — children: 1 tabs, 2 content-grid, 3 nav, 4 header ===== */
-  .stage[data-view="grid"] > div:first-child > div:nth-child(3) { height: 100% !important; }                                  /* nav rail */
-  .stage[data-view="grid"] > div:first-child > div:nth-child(4) { left: 48px  !important; right: 0    !important; width: auto !important; }  /* header */
-  .stage[data-view="grid"] > div:first-child > div:nth-child(1) { left: 122px !important; right: 66px !important; width: auto !important; }  /* tabs + toolbar */
-  .stage[data-view="grid"] > div:first-child > div:nth-child(2) { left: 122px !important; right: 66px !important; width: auto !important; }  /* content grid */
+  /* align the grid chrome + content to the LIST view: nav 56, header left 56,
+     tabs at x210/top64, content at x210/top112, right inset 141 */
+  .stage[data-view="grid"] > div:first-child > div:nth-child(3) { height: 100% !important; width: 56px !important; }
+  .stage[data-view="grid"] > div:first-child > div:nth-child(4) { left: 56px  !important; right: 0     !important; width: auto !important; }
+  .stage[data-view="grid"] > div:first-child > div:nth-child(1) { left: 210px !important; right: 141px !important; top: 64px  !important; width: auto !important; }
+  .stage[data-view="grid"] > div:first-child > div:nth-child(2) { left: 210px !important; right: 141px !important; top: 112px !important; width: auto !important; }
   .stage[data-view="grid"] > div:first-child > div:nth-child(3) > div:nth-child(5) { top: auto !important; bottom: 52px !important; }
   .stage[data-view="grid"] > div:first-child > div:nth-child(3) > div:nth-child(6) { top: auto !important; bottom: 12px !important; }
   /* let the card row wrap on narrower widths */
