@@ -1073,5 +1073,33 @@
   })();
 })();
 </script>
+<style>
+  /* ---- grid card hover (screen 6: teal border + teal type pill) ---- */
+  .stage[data-view="grid"] .gv-card { cursor: pointer; transition: border-color .12s ease; }
+  .stage[data-view="grid"] .gv-card:hover { border-color: #26B5CE !important; }
+  .stage[data-view="grid"] .gv-pill { transition: background-color .12s ease; }
+  .stage[data-view="grid"] .gv-pill svg [stroke] { transition: stroke .12s ease; }
+  .stage[data-view="grid"] .gv-card:hover .gv-pill { background-color: #26B5CE14 !important; }
+  .stage[data-view="grid"] .gv-card:hover .gv-pill-icon [stroke] { stroke: #26B5CE !important; }
+</style>
+<script>
+(function () {
+  var gs = document.querySelector('.stage[data-view="grid"]');
+  if (!gs) return;
+  var cards = Array.prototype.slice.call(gs.querySelectorAll('div')).filter(function (d) {
+    var s = d.getAttribute('style') || '';
+    return /width:\s*304px/.test(s) && /border-radius:\s*12px/.test(s);
+  });
+  cards.forEach(function (c) {
+    c.classList.add('gv-card');
+    var pill = c.querySelector('div[style*="border-radius: 100px"]');   // the type pill (Dashboard/App/Slides)
+    if (pill) {
+      pill.classList.add('gv-pill');
+      var pi = pill.querySelector('svg');
+      if (pi) pi.classList.add('gv-pill-icon');
+    }
+  });
+})();
+</script>
 </body>
 </html>
