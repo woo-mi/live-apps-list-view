@@ -1074,13 +1074,10 @@
 })();
 </script>
 <style>
-  /* ---- grid card hover (screen 6: teal border + teal type pill) ---- */
+  /* ---- grid card hover (screen 6): per-type colour on border + type pill ---- */
   .stage[data-view="grid"] .gv-card { cursor: pointer; transition: border-color .12s ease; }
-  .stage[data-view="grid"] .gv-card:hover { border-color: var(--gv-hover-color, #26B5CE) !important; }
   .stage[data-view="grid"] .gv-pill { transition: background-color .12s ease; }
   .stage[data-view="grid"] .gv-pill svg [stroke] { transition: stroke .12s ease; }
-  .stage[data-view="grid"] .gv-card:hover .gv-pill { background-color: var(--gv-hover-tint, #26B5CE14) !important; }
-  .stage[data-view="grid"] .gv-card:hover .gv-pill-icon [stroke] { stroke: var(--gv-hover-color, #26B5CE) !important; }
 </style>
 <script>
 (function () {
@@ -1101,13 +1098,26 @@
   cards.forEach(function (c) {
     c.classList.add('gv-card');
     var pill = c.querySelector('div[style*="border-radius: 100px"]');   // the type pill (Dashboard/App/Slides)
-    if (pill) {
-      pill.classList.add('gv-pill');
-      var pi = pill.querySelector('svg');
-      if (pi) pi.classList.add('gv-pill-icon');
-      var type = TYPE[pill.textContent.trim()];
-      if (type) { c.style.setProperty('--gv-hover-color', type.c); c.style.setProperty('--gv-hover-tint', type.t); }
-    }
+    var pi = pill ? pill.querySelector('svg') : null;
+    if (pill) pill.classList.add('gv-pill');
+    if (pi) pi.classList.add('gv-pill-icon');
+    var type = pill ? TYPE[pill.textContent.trim()] : null;
+    var color = type ? type.c : '#26B5CE';
+    var tint = type ? type.t : '#26B5CE14';
+    var dBorder = c.style.borderColor;                 // defaults, to restore on leave
+    var dPill = pill ? pill.style.backgroundColor : '';
+    var strokeEls = pi ? Array.prototype.slice.call(pi.querySelectorAll('[stroke]')) : [];
+    var dStrokes = strokeEls.map(function (e) { return e.getAttribute('stroke'); });
+    c.addEventListener('mouseenter', function () {
+      c.style.borderColor = color;
+      if (pill) pill.style.backgroundColor = tint;
+      strokeEls.forEach(function (e) { e.setAttribute('stroke', color); });
+    });
+    c.addEventListener('mouseleave', function () {
+      c.style.borderColor = dBorder;
+      if (pill) pill.style.backgroundColor = dPill;
+      strokeEls.forEach(function (e, i) { e.setAttribute('stroke', dStrokes[i]); });
+    });
   });
 })();
 </script>
