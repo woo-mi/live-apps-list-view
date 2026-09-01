@@ -465,10 +465,10 @@
   /* ---- interaction layer (states 2-4) ---- */
   :root { --lv-hover: #26B5CE14; --lv-accent: #26B5CE; }   /* teal hover tint + accent, from Paper */
   .stage .lv-row { transition: background-color .12s ease; border-radius: 10px; }
-  .stage .lv-row svg path, .stage .lv-row svg circle { transition: stroke .12s ease, fill .12s ease; }
+  .stage .lv-row svg path, .stage .lv-row svg rect, .stage .lv-row svg circle, .stage .lv-row svg line { transition: stroke .12s ease, fill .12s ease; }
   .stage .lv-row:hover { background-color: var(--lv-hover) !important; }
   /* on hover the leading type icon (and, for folders, the chevron) turn teal; other icons stay gray */
-  .stage .lv-row:hover .lv-typeicon path { stroke: var(--lv-accent) !important; }
+  .stage .lv-row:hover .lv-typeicon [stroke] { stroke: var(--lv-accent) !important; }
   .stage .lv-folder:hover .lv-chev path { fill: #26B5CE61 !important; }
   .stage .lv-folder { cursor: pointer; user-select: none; }
   .stage .lv-chev { transition: transform .15s ease; transform-origin: 8px 8px; }
@@ -481,7 +481,7 @@
   .stage .lv-fav { opacity: 0; transition: opacity .12s ease; }
   .stage .lv-nested:hover .lv-fav { opacity: 1; }
   /* an expanded folder shows its icon + chevron in the teal active state, with a divider under the header */
-  .stage .lv-folder.lv-open .lv-typeicon path { stroke: var(--lv-accent) !important; }
+  .stage .lv-folder.lv-open .lv-typeicon [stroke] { stroke: var(--lv-accent) !important; }
   .stage .lv-folder.lv-open .lv-chev path { fill: #26B5CE61 !important; }
   .stage .lv-folder.lv-open::after { content: ''; position: absolute; left: 127px; right: 0; top: 18px; height: 1px; background: #D4D4D4; }
 </style>
