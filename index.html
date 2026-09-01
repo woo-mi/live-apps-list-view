@@ -32,7 +32,7 @@
   .stage[data-view="list"] > div:first-child > div:nth-child(1) { height: 100% !important; }
   .stage[data-view="list"] > div:first-child > div:nth-child(2) { left: 210px !important; right: 141px !important; width: auto !important; }
   .stage[data-view="list"] > div:first-child > div:nth-child(3) { left: 56px  !important; right: 0    !important; width: auto !important; }
-  .stage[data-view="list"] > div:first-child > div:nth-child(4) { left: 210px !important; right: 141px !important; width: auto !important; align-items: stretch !important; }
+  .stage[data-view="list"] > div:first-child > div:nth-child(4) { left: 210px !important; right: 141px !important; width: auto !important; align-items: stretch !important; max-height: calc(100vh - 112px) !important; overflow-y: auto !important; padding-bottom: 32px; }
   .stage[data-view="list"] > div:first-child > div:nth-child(4) > * { width: auto !important; }
   .stage[data-view="list"] > div:first-child > div:nth-child(4) > *:nth-child(1) > *:last-child,
   .stage[data-view="list"] > div:first-child > div:nth-child(4) > *:nth-child(2) > *:last-child { right: 0 !important; width: auto !important; }
@@ -46,7 +46,7 @@
   .stage[data-view="grid"] > div:first-child > div:nth-child(3) { height: 100% !important; width: 56px !important; }
   .stage[data-view="grid"] > div:first-child > div:nth-child(4) { left: 56px  !important; right: 0     !important; width: auto !important; }
   .stage[data-view="grid"] > div:first-child > div:nth-child(1) { left: 210px !important; right: 141px !important; top: 64px  !important; width: auto !important; }
-  .stage[data-view="grid"] > div:first-child > div:nth-child(2) { left: 210px !important; right: 141px !important; top: 112px !important; width: auto !important; }
+  .stage[data-view="grid"] > div:first-child > div:nth-child(2) { left: 210px !important; right: 141px !important; top: 112px !important; width: auto !important; height: calc(100vh - 112px) !important; overflow-y: auto !important; overflow-x: hidden !important; padding-bottom: 32px; }
   .stage[data-view="grid"] > div:first-child > div:nth-child(3) > div:nth-child(5) { top: auto !important; bottom: 52px !important; }
   .stage[data-view="grid"] > div:first-child > div:nth-child(3) > div:nth-child(6) { top: auto !important; bottom: 12px !important; }
   /* let the card row wrap on narrower widths */
@@ -1176,7 +1176,7 @@
     sec.addEventListener('click', function () {
       if (grid) { grid.remove(); grid = null; if (chev) chev.style.transform = ''; return; }
       grid = document.createElement('div');
-      grid.style.cssText = 'display:flex; flex-wrap:wrap; gap:12px;';
+      grid.style.cssText = 'display:flex; flex-wrap:wrap; gap:12px; margin-top:-12px;';   /* header→cards gap 12px like Favorite */
       for (var k = 0; k < cfg.count; k++) grid.appendChild(makeCard(cfg, k));
       sec.insertAdjacentElement('afterend', grid);
       if (chev) chev.style.transform = 'rotate(90deg)';
