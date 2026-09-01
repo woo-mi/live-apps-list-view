@@ -1073,50 +1073,100 @@
   })();
 })();
 </script>
-<style>
-  /* ---- grid card hover (screen 6): per-type colour on border + type pill ---- */
-  .stage[data-view="grid"] .gv-card { cursor: pointer; transition: border-color .12s ease; }
-  .stage[data-view="grid"] .gv-pill { transition: background-color .12s ease; }
-  .stage[data-view="grid"] .gv-pill svg [stroke] { transition: stroke .12s ease; }
-</style>
 <script>
 (function () {
   var gs = document.querySelector('.stage[data-view="grid"]');
   if (!gs) return;
-  var cards = Array.prototype.slice.call(gs.querySelectorAll('div')).filter(function (d) {
-    var s = d.getAttribute('style') || '';
-    return /width:\s*304px/.test(s) && /border-radius:\s*12px/.test(s);
-  });
-  // hover colour per card type (matches the list-view / folder palette)
-  var TYPE = {
-    'Dashboard': { c: 'oklch(56.8% 0.159 275.2)', t: 'oklch(56.8% 0.159 275.2 / 8%)' },  // indigo
-    'App':       { c: '#26B5CE',                   t: '#26B5CE14' },                       // teal
-    'Slides':    { c: '#EB5757',                   t: 'rgba(235,87,87,0.08)' },            // red
-    'Reports':   { c: 'oklch(72.9% 0.140 59.4)',   t: 'oklch(72.9% 0.140 59.4 / 8%)' },    // amber
-    'Folders':   { c: 'oklch(47.6% 0.003 282.5)',  t: 'oklch(47.6% 0.003 282.5 / 8%)' }    // grey
+  var content = gs.firstElementChild.children[1];        // content-grid
+  var sections = Array.prototype.slice.call(content.children);
+
+  // per-type colour (border + pill tint) — same palette as the list view
+  var COLORS = {
+    'Dashboard': { c: 'oklch(56.8% 0.159 275.2)', t: 'oklch(56.8% 0.159 275.2 / 8%)' },
+    'App':       { c: '#26B5CE',                   t: '#26B5CE14' },
+    'Slides':    { c: '#EB5757',                   t: 'rgba(235,87,87,0.08)' },
+    'Folder':    { c: 'oklch(47.6% 0.003 282.5)',  t: 'oklch(47.6% 0.003 282.5 / 8%)' },
+    'Report':    { c: 'oklch(72.9% 0.140 59.4)',   t: 'oklch(72.9% 0.140 59.4 / 8%)' }
   };
-  cards.forEach(function (c) {
-    c.classList.add('gv-card');
-    var pill = c.querySelector('div[style*="border-radius: 100px"]');   // the type pill (Dashboard/App/Slides)
+  var AV = [
+    { l: 'S', bg: '#FFEED3', bd: '#ECC7A5', fg: '#A83E00' },
+    { l: 'P', bg: '#E0F0FF', bd: '#AFD3EB', fg: '#026AA2' },
+    { l: 'D', bg: '#FFE3EC', bd: '#F2B1C9', fg: '#C2004E' },
+    { l: 'J', bg: '#EBF6D6', bd: '#C8D7AD', fg: '#4B6B1B' },
+    { l: 'M', bg: '#FBE6F5', bd: '#E7B8DE', fg: '#9E168E' }
+  ];
+
+  // hover: card border + type pill take the card's own colour, restored on leave
+  function wireHover(card, label) {
+    var col = COLORS[label] || COLORS['App'];
+    var pill = card.querySelector('div[style*="border-radius: 100px"]');
     var pi = pill ? pill.querySelector('svg') : null;
-    if (pill) pill.classList.add('gv-pill');
-    if (pi) pi.classList.add('gv-pill-icon');
-    var type = pill ? TYPE[pill.textContent.trim()] : null;
-    var color = type ? type.c : '#26B5CE';
-    var tint = type ? type.t : '#26B5CE14';
-    var dBorder = c.style.borderColor;                 // defaults, to restore on leave
-    var dPill = pill ? pill.style.backgroundColor : '';
+    card.style.cursor = 'pointer';
+    card.style.transition = 'border-color .12s ease';
+    if (pill) pill.style.transition = 'background-color .12s ease';
+    var dBorder = card.style.borderColor, dPill = pill ? pill.style.backgroundColor : '';
     var strokeEls = pi ? Array.prototype.slice.call(pi.querySelectorAll('[stroke]')) : [];
     var dStrokes = strokeEls.map(function (e) { return e.getAttribute('stroke'); });
-    c.addEventListener('mouseenter', function () {
-      c.style.borderColor = color;
-      if (pill) pill.style.backgroundColor = tint;
-      strokeEls.forEach(function (e) { e.setAttribute('stroke', color); });
+    card.addEventListener('mouseenter', function () {
+      card.style.borderColor = col.c;
+      if (pill) pill.style.backgroundColor = col.t;
+      strokeEls.forEach(function (e) { e.setAttribute('stroke', col.c); });
     });
-    c.addEventListener('mouseleave', function () {
-      c.style.borderColor = dBorder;
+    card.addEventListener('mouseleave', function () {
+      card.style.borderColor = dBorder;
       if (pill) pill.style.backgroundColor = dPill;
       strokeEls.forEach(function (e, i) { e.setAttribute('stroke', dStrokes[i]); });
+    });
+  }
+
+  // card templates from the Favorite row (Dashboard / App / Slides); also wire their hover
+  var TPL = {};
+  var favRow = sections[0].children[1];
+  if (favRow) Array.prototype.forEach.call(favRow.children, function (c) {
+    var pill = c.querySelector('div[style*="border-radius: 100px"]');
+    var t = pill ? pill.textContent.trim() : '';
+    if (t) TPL[t] = c;
+    wireHover(c, t);
+  });
+
+  function makeCard(cfg, idx) {
+    var c = (TPL[cfg.tpl] || TPL['App']).cloneNode(true);
+    var pill = c.querySelector('div[style*="border-radius: 100px"]');
+    if (pill) { var lbl = pill.querySelector('div'); if (lbl) lbl.textContent = cfg.label; }
+    var avatar = c.querySelector('div[style*="border-radius: 50%"]');
+    var av = AV[idx % AV.length];
+    if (avatar) { avatar.style.backgroundColor = av.bg; avatar.style.borderColor = av.bd; var L = avatar.firstElementChild; if (L) { L.style.color = av.fg; L.textContent = av.l; } }
+    wireHover(c, cfg.label);
+    return c;
+  }
+
+  // which cards each collapsible section reveals (count matches screen 7)
+  var CFG = {
+    'Folders':    { tpl: 'App',       label: 'Folder',    count: 3 },
+    'Dashboards': { tpl: 'Dashboard', label: 'Dashboard', count: 4 },
+    'Live Apps':  { tpl: 'App',       label: 'App',       count: 5 },
+    'Slides':     { tpl: 'Slides',    label: 'Slides',    count: 2 },
+    'Reports':    { tpl: 'Slides',    label: 'Report',    count: 2 }
+  };
+
+  sections.forEach(function (sec, i) {
+    if (i === 0) return;                                  // Favorite stays open
+    var labelEl = sec.querySelector('div');
+    var name = labelEl ? labelEl.textContent.trim() : '';
+    var cfg = CFG[name];
+    if (!cfg) return;
+    var chev = sec.querySelector('svg');
+    if (chev) { chev.style.transition = 'transform .15s ease'; chev.style.transformOrigin = 'center'; }
+    sec.style.cursor = 'pointer';
+    sec.style.userSelect = 'none';
+    var grid = null;
+    sec.addEventListener('click', function () {
+      if (grid) { grid.remove(); grid = null; if (chev) chev.style.transform = ''; return; }
+      grid = document.createElement('div');
+      grid.style.cssText = 'display:flex; flex-wrap:wrap; gap:12px;';
+      for (var k = 0; k < cfg.count; k++) grid.appendChild(makeCard(cfg, k));
+      sec.insertAdjacentElement('afterend', grid);
+      if (chev) chev.style.transform = 'rotate(90deg)';
     });
   });
 })();
