@@ -1076,11 +1076,11 @@
 <style>
   /* ---- grid card hover (screen 6: teal border + teal type pill) ---- */
   .stage[data-view="grid"] .gv-card { cursor: pointer; transition: border-color .12s ease; }
-  .stage[data-view="grid"] .gv-card:hover { border-color: #26B5CE !important; }
+  .stage[data-view="grid"] .gv-card:hover { border-color: var(--gv-hover-color, #26B5CE) !important; }
   .stage[data-view="grid"] .gv-pill { transition: background-color .12s ease; }
   .stage[data-view="grid"] .gv-pill svg [stroke] { transition: stroke .12s ease; }
-  .stage[data-view="grid"] .gv-card:hover .gv-pill { background-color: #26B5CE14 !important; }
-  .stage[data-view="grid"] .gv-card:hover .gv-pill-icon [stroke] { stroke: #26B5CE !important; }
+  .stage[data-view="grid"] .gv-card:hover .gv-pill { background-color: var(--gv-hover-tint, #26B5CE14) !important; }
+  .stage[data-view="grid"] .gv-card:hover .gv-pill-icon [stroke] { stroke: var(--gv-hover-color, #26B5CE) !important; }
 </style>
 <script>
 (function () {
@@ -1090,6 +1090,14 @@
     var s = d.getAttribute('style') || '';
     return /width:\s*304px/.test(s) && /border-radius:\s*12px/.test(s);
   });
+  // hover colour per card type (matches the list-view / folder palette)
+  var TYPE = {
+    'Dashboard': { c: 'oklch(56.8% 0.159 275.2)', t: 'oklch(56.8% 0.159 275.2 / 8%)' },  // indigo
+    'App':       { c: '#26B5CE',                   t: '#26B5CE14' },                       // teal
+    'Slides':    { c: '#EB5757',                   t: 'rgba(235,87,87,0.08)' },            // red
+    'Reports':   { c: 'oklch(72.9% 0.140 59.4)',   t: 'oklch(72.9% 0.140 59.4 / 8%)' },    // amber
+    'Folders':   { c: 'oklch(47.6% 0.003 282.5)',  t: 'oklch(47.6% 0.003 282.5 / 8%)' }    // grey
+  };
   cards.forEach(function (c) {
     c.classList.add('gv-card');
     var pill = c.querySelector('div[style*="border-radius: 100px"]');   // the type pill (Dashboard/App/Slides)
@@ -1097,6 +1105,8 @@
       pill.classList.add('gv-pill');
       var pi = pill.querySelector('svg');
       if (pi) pi.classList.add('gv-pill-icon');
+      var type = TYPE[pill.textContent.trim()];
+      if (type) { c.style.setProperty('--gv-hover-color', type.c); c.style.setProperty('--gv-hover-tint', type.t); }
     }
   });
 })();
