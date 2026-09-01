@@ -468,8 +468,9 @@
   .stage .lv-row svg path, .stage .lv-row svg rect, .stage .lv-row svg circle, .stage .lv-row svg line { transition: stroke .12s ease, fill .12s ease; }
   .stage .lv-row:hover { background-color: var(--lv-hover) !important; }
   /* on hover the leading type icon (and, for folders, the chevron) turn teal; other icons stay gray */
-  .stage .lv-row:hover .lv-typeicon [stroke] { stroke: var(--lv-accent) !important; }
-  .stage .lv-folder:hover .lv-chev path { fill: #26B5CE61 !important; }
+  /* default icons are gray; on hover they take the folder's own colour (teal fallback) */
+  .stage .lv-row:hover .lv-typeicon [stroke] { stroke: var(--lv-hover-icon, var(--lv-accent)) !important; }
+  .stage .lv-folder:hover .lv-chev path { fill: var(--lv-hover-icon, #26B5CE61) !important; }
   .stage .lv-folder { cursor: pointer; user-select: none; }
   .stage .lv-chev { transition: transform .15s ease; transform-origin: 8px 8px; }
   .stage .lv-folder.lv-open .lv-chev { transform: rotate(90deg); }
@@ -481,7 +482,6 @@
   .stage .lv-fav { opacity: 0; transition: opacity .12s ease; }
   .stage .lv-nested:hover .lv-fav { opacity: 1; }
   /* an expanded folder shows its icon + chevron in the teal active state, with a divider under the header */
-  .stage .lv-folder.lv-open .lv-chev path { fill: #26B5CE61 !important; }
   .stage .lv-folder.lv-open::after { content: ''; position: absolute; left: var(--lv-div-left, 127px); right: 0; top: 18px; height: 1px; background: #D4D4D4; }
 </style>
 <script>
@@ -503,11 +503,6 @@
   function tagHolder(row) {
     var h = row.lastElementChild;           // absolute content holder (title/tag/owner/date/menu)
     if (h) h.classList.add('lv-holder');
-  }
-
-  // paint every stroked shape of an icon a given colour (base identity colour)
-  function paintIcon(iconSvg, color) {
-    if (iconSvg && color) iconSvg.querySelectorAll('[stroke]').forEach(function (e) { e.setAttribute('stroke', color); });
   }
 
   // build one nested app row: clone a top-level app row, but swap in the parent
@@ -532,8 +527,7 @@
         var ni = iconSvg.cloneNode(true);
         ni.setAttribute('style', oldIcon.getAttribute('style') || '');   // keep the app-icon slot position
         ni.setAttribute('width', '18'); ni.setAttribute('height', '18');
-        ni.classList.add('lv-typeicon');
-        paintIcon(ni, color);
+        ni.classList.add('lv-typeicon');                                 // stays gray by default; colour comes on hover
         oldIcon.replaceWith(ni);
       } else {
         oldIcon.classList.add('lv-typeicon');
@@ -583,12 +577,15 @@
       if (slidesSeen === 1) color = '#EB5757';                            // Slides = red
       else { color = 'oklch(47.6% 0.003 282.5)'; if (label) label.textContent = 'Reports'; }  // 2nd "Slides" = Reports (gray)
     }
-    paintIcon(tIcon, color);                 // colour the folder's own icon
+    // the folder's colour is applied only on hover (default stays gray); the
+    // CSS var cascades to the folder row and (via the kids container) its nested rows
+    if (color) row.style.setProperty('--lv-hover-icon', color);
     folderRows.push(row);
 
-    // nested children container (built once, revealed on open) — inherits folder icon + colour
+    // nested children container (built once, revealed on open) — inherits folder icon
     var kids = document.createElement('div');
     kids.className = 'lv-children';
+    if (color) kids.style.setProperty('--lv-hover-icon', color);
     AV.forEach(function (spec) { kids.appendChild(makeNested(appTemplate, spec, tIcon, color)); });
     row.insertAdjacentElement('afterend', kids);
 
