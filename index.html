@@ -28,12 +28,22 @@
     height: 100% !important;
     position: relative !important;
   }
-  /* the header/toolbar/list already carry both left and right anchors in the
-     export, so dropping the fixed width lets them stretch edge-to-edge */
-  .stage > div:first-child > div:nth-child(1) { height: 100% !important; }   /* nav rail: full viewport height */
-  .stage > div:first-child > div:nth-child(2) { width: auto !important; }    /* tabs + toolbar row */
-  .stage > div:first-child > div:nth-child(3) { width: auto !important; }    /* top header bar */
-  .stage > div:first-child > div:nth-child(4) { width: auto !important; }    /* app list */
+  /* the export left the right edge unanchored, so give each row an explicit
+     right inset: left + right then drive the width and they stretch to fill */
+  .stage > div:first-child > div:nth-child(1) { height: 100% !important; }                                 /* nav rail: full viewport height */
+  .stage > div:first-child > div:nth-child(2) { left: 210px !important; right: 141px !important; width: auto !important; }  /* tabs + toolbar row */
+  .stage > div:first-child > div:nth-child(3) { left: 56px  !important; right: 0    !important; width: auto !important; }  /* top header bar */
+  .stage > div:first-child > div:nth-child(4) { left: 210px !important; right: 141px !important; width: auto !important; align-items: stretch !important; }  /* app list */
+  /* app rows only (the two starred items): each row's column-holder is
+     position:absolute with just a left anchor, so it ignores flex and shrinks
+     to content. Add right:0 to stretch it to the row's right edge, then push
+     the trailing columns (tag/owner/date/menu) to that edge with margin-left.
+     The collapsible rows below keep their content left-aligned, untouched. */
+  .stage > div:first-child > div:nth-child(4) > * { width: auto !important; }
+  .stage > div:first-child > div:nth-child(4) > *:nth-child(1) > *:last-child,
+  .stage > div:first-child > div:nth-child(4) > *:nth-child(2) > *:last-child { right: 0 !important; width: auto !important; }
+  .stage > div:first-child > div:nth-child(4) > *:nth-child(1) > *:last-child > *:nth-child(2),
+  .stage > div:first-child > div:nth-child(4) > *:nth-child(2) > *:last-child > *:nth-child(2) { margin-left: auto !important; }
   /* pin the nav rail's bottom cluster (notifications + avatar) to the bottom edge */
   .stage > div:first-child > div:nth-child(1) > div:nth-child(5) { top: auto !important; bottom: 52px !important; }
   .stage > div:first-child > div:nth-child(1) > div:nth-child(6) { top: auto !important; bottom: 12px !important; }
