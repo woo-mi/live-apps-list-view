@@ -461,5 +461,97 @@
       </div>
     </div>
 </div>
+<style>
+  /* ---- interaction layer (states 2-4) ---- */
+  :root { --lv-hover: #EDF4F5; }           /* row hover highlight (refined from Paper) */
+  .stage .lv-row { transition: background-color .12s ease; }
+  .stage .lv-row:hover { background-color: var(--lv-hover) !important; }
+  .stage .lv-folder { cursor: pointer; user-select: none; }
+  .stage .lv-chev { transition: transform .15s ease; transform-origin: 8px 8px; }
+  .stage .lv-folder.lv-open .lv-chev { transform: rotate(90deg); }
+  .stage .lv-children { display: none; flex-direction: column; gap: 4px; width: 100%; }
+  .stage .lv-children.lv-show { display: flex; }
+  .stage .lv-holder { right: 0 !important; width: auto !important; }
+  .stage .lv-holder > *:nth-child(2) { margin-left: auto !important; }
+  .stage .lv-nested { width: auto !important; margin-left: 28px; }
+  .stage .lv-fav { opacity: 0; transition: opacity .12s ease; }
+  .stage .lv-nested:hover .lv-fav { opacity: 1; }
+</style>
+<script>
+(function () {
+  var list = document.querySelector('.stage > div:first-child > div:nth-child(4)');
+  if (!list) return;
+  var rows = Array.prototype.slice.call(list.children);
+
+  // avatar palette for the nested app rows (letter, bg, border, text)
+  var AV = [
+    { l: 'S', bg: '#FFEED3', bd: '#ECC7A5', fg: '#A83E00' },
+    { l: 'P', bg: '#EDE4FB', bd: '#D3C4F0', fg: '#6B3AC9' },
+    { l: 'P', bg: '#EDE4FB', bd: '#D3C4F0', fg: '#6B3AC9' },
+    { l: 'D', bg: '#FBE0EE', bd: '#F0C2DC', fg: '#B0307A' },
+    { l: 'J', bg: '#E6F3D9', bd: '#CDE4B5', fg: '#4C7A1E' },
+    { l: 'J', bg: '#E6F3D9', bd: '#CDE4B5', fg: '#4C7A1E' }
+  ];
+
+  function tagHolder(row) {
+    var h = row.lastElementChild;           // absolute content holder (title/tag/owner/date/menu)
+    if (h) h.classList.add('lv-holder');
+  }
+
+  // build one nested app row by cloning a top-level app row and restyling it
+  function makeNested(template, spec) {
+    var clone = template.cloneNode(true);
+    clone.classList.add('lv-row', 'lv-nested');
+    clone.classList.remove('lv-approw');
+    tagHolder(clone);
+    // favourite star: hidden until hover, shown as an outline
+    var star = clone.querySelector(':scope > svg');
+    if (star) {
+      star.classList.add('lv-fav');
+      var paths = star.querySelectorAll('path');
+      if (paths[1]) paths[1].style.fill = 'none';           // drop the solid fill -> outline
+      if (paths[1]) paths[1].setAttribute('stroke', '#9AA0A6');
+      if (paths[1]) paths[1].setAttribute('stroke-width', '1');
+    }
+    // avatar monogram
+    var holder = clone.lastElementChild;
+    var avatar = holder ? holder.querySelector('div[style*="border-radius: 50%"]') : null;
+    if (avatar) {
+      avatar.style.backgroundColor = spec.bg;
+      avatar.style.borderColor = spec.bd;
+      var letter = avatar.firstElementChild;
+      if (letter) { letter.style.color = spec.fg; letter.textContent = spec.l; }
+    }
+    return clone;
+  }
+
+  var appTemplate = rows[0];                 // a complete top-level app row to clone from
+
+  rows.forEach(function (row, i) {
+    row.classList.add('lv-row');
+    if (i < 2) {                             // the two starred app rows
+      row.classList.add('lv-approw');
+      tagHolder(row);
+      return;
+    }
+    // collapsible folder rows
+    row.classList.add('lv-folder');
+    var chevWrap = row.lastElementChild;     // disclosure container at left:0
+    var chev = chevWrap ? chevWrap.querySelector('svg') : null;
+    if (chev) chev.classList.add('lv-chev');
+
+    // nested children container (built once, revealed on open)
+    var kids = document.createElement('div');
+    kids.className = 'lv-children';
+    AV.forEach(function (spec) { kids.appendChild(makeNested(appTemplate, spec)); });
+    row.insertAdjacentElement('afterend', kids);
+
+    row.addEventListener('click', function () {
+      var open = row.classList.toggle('lv-open');
+      kids.classList.toggle('lv-show', open);
+    });
+  });
+})();
+</script>
 </body>
 </html>
