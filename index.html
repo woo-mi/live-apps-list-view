@@ -577,7 +577,7 @@
     else if (name === 'Slides') {
       slidesSeen++;
       if (slidesSeen === 1) { color = '#EB5757'; bg = 'rgba(235,87,87,0.08)'; }                                   // Slides = red
-      else { color = GREY; bg = GREY_BG; if (label) label.textContent = 'Reports'; }                              // 2nd "Slides" = Reports (gray)
+      else { color = 'oklch(72.9% 0.140 59.4)'; bg = 'oklch(72.9% 0.140 59.4 / 8%)'; if (label) label.textContent = 'Reports'; }  // 2nd "Slides" = Reports (amber)
     }
     // Apps (and the app rows) keep the teal fallback
 
@@ -613,6 +613,38 @@
   placeDividers();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(placeDividers);
   window.addEventListener('resize', placeDividers);
+
+  // list / grid view toggle: this is the List View, so the list icon is selected;
+  // both options are clickable and the white "selected" pill moves accordingly
+  (function () {
+    var svgs = Array.prototype.slice.call(document.querySelectorAll('.stage svg'));
+    var gridIcon = null;
+    svgs.forEach(function (s) {
+      if (s.querySelectorAll('rect').length === 4) {
+        var r = s.getBoundingClientRect();
+        if (r.top < 120 && r.left > 400 && !gridIcon) gridIcon = s;    // the toolbar grid icon (not nav rail / folder icons)
+      }
+    });
+    if (!gridIcon) return;
+    var box = gridIcon;
+    for (var i = 0; i < 6; i++) {
+      if (box.parentElement && box.parentElement.querySelectorAll('svg').length >= 2) { box = box.parentElement; break; }
+      box = box.parentElement;
+      if (!box) return;
+    }
+    var opts = Array.prototype.slice.call(box.children).filter(function (c) { return c.querySelector('svg'); });
+    if (opts.length < 2) return;
+    function select(el) {
+      opts.forEach(function (o) {
+        var on = (o === el);
+        o.style.backgroundColor = on ? '#FFFFFF' : 'transparent';
+        o.style.boxShadow = on ? '#0000001F 0px 1px 2px' : 'none';
+      });
+    }
+    opts.forEach(function (o) { o.style.cursor = 'pointer'; o.addEventListener('click', function () { select(o); }); });
+    var listOpt = opts.filter(function (o) { var s = o.querySelector('svg'); return !(s && s.querySelectorAll('rect').length === 4); })[0];
+    if (listOpt) select(listOpt);      // default selection = list
+  })();
 })();
 </script>
 </body>
