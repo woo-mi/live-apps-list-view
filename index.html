@@ -481,9 +481,8 @@
   .stage .lv-fav { opacity: 0; transition: opacity .12s ease; }
   .stage .lv-nested:hover .lv-fav { opacity: 1; }
   /* an expanded folder shows its icon + chevron in the teal active state, with a divider under the header */
-  .stage .lv-folder.lv-open .lv-typeicon [stroke] { stroke: var(--lv-accent) !important; }
   .stage .lv-folder.lv-open .lv-chev path { fill: #26B5CE61 !important; }
-  .stage .lv-folder.lv-open::after { content: ''; position: absolute; left: 127px; right: 0; top: 18px; height: 1px; background: #D4D4D4; }
+  .stage .lv-folder.lv-open::after { content: ''; position: absolute; left: var(--lv-div-left, 127px); right: 0; top: 18px; height: 1px; background: #D4D4D4; }
 </style>
 <script>
 (function () {
@@ -506,8 +505,14 @@
     if (h) h.classList.add('lv-holder');
   }
 
-  // build one nested app row by cloning a top-level app row and restyling it
-  function makeNested(template, spec) {
+  // paint every stroked shape of an icon a given colour (base identity colour)
+  function paintIcon(iconSvg, color) {
+    if (iconSvg && color) iconSvg.querySelectorAll('[stroke]').forEach(function (e) { e.setAttribute('stroke', color); });
+  }
+
+  // build one nested app row: clone a top-level app row, but swap in the parent
+  // folder's icon (in the folder's colour) so nested items match their folder
+  function makeNested(template, spec, iconSvg, color) {
     var clone = template.cloneNode(true);
     clone.classList.add('lv-row', 'lv-nested');
     clone.classList.remove('lv-approw');
@@ -519,10 +524,21 @@
       var paths = star.querySelectorAll('path');
       if (paths[1]) paths[1].setAttribute('fill', '#FFFFFF');
     }
-    // leading app icon -> turns teal on hover
-    var nIcon = clone.lastElementChild && clone.lastElementChild.children[0]
-      ? clone.lastElementChild.children[0].querySelector('svg') : null;
-    if (nIcon) nIcon.classList.add('lv-typeicon');
+    // leading icon: use the folder's icon in the folder's colour
+    var titleCol = clone.lastElementChild && clone.lastElementChild.children[0];
+    var oldIcon = titleCol ? titleCol.querySelector('svg') : null;
+    if (oldIcon) {
+      if (iconSvg) {
+        var ni = iconSvg.cloneNode(true);
+        ni.setAttribute('style', oldIcon.getAttribute('style') || '');   // keep the app-icon slot position
+        ni.setAttribute('width', '18'); ni.setAttribute('height', '18');
+        ni.classList.add('lv-typeicon');
+        paintIcon(ni, color);
+        oldIcon.replaceWith(ni);
+      } else {
+        oldIcon.classList.add('lv-typeicon');
+      }
+    }
     // avatar monogram
     var holder = clone.lastElementChild;
     var avatar = holder ? holder.querySelector('div[style*="border-radius: 50%"]') : null;
@@ -536,6 +552,8 @@
   }
 
   var appTemplate = rows[0];                 // a complete top-level app row to clone from
+  var folderRows = [];                       // for dividers
+  var slidesSeen = 0;
 
   rows.forEach(function (row, i) {
     row.classList.add('lv-row');
@@ -549,16 +567,29 @@
     }
     // collapsible folder rows
     row.classList.add('lv-folder');
-    var tIcon = row.querySelector(':scope > svg');   // leading folder/type icon -> teal on hover/open
+    var tIcon = row.querySelector(':scope > svg');   // leading folder/type icon
     if (tIcon) tIcon.classList.add('lv-typeicon');
     var chevWrap = row.lastElementChild;     // disclosure container at left:0
     var chev = chevWrap ? chevWrap.querySelector('svg') : null;
     if (chev) chev.classList.add('lv-chev');
 
-    // nested children container (built once, revealed on open)
+    // per-folder identity colour (from the Paper spec)
+    var label = row.children[1];             // the label text div
+    var name = label ? label.textContent.trim() : '';
+    var color = null;
+    if (name === 'Dashboards') color = 'oklch(56.8% 0.159 275.2)';       // indigo
+    else if (name === 'Slides') {
+      slidesSeen++;
+      if (slidesSeen === 1) color = '#EB5757';                            // Slides = red
+      else { color = 'oklch(47.6% 0.003 282.5)'; if (label) label.textContent = 'Reports'; }  // 2nd "Slides" = Reports (gray)
+    }
+    paintIcon(tIcon, color);                 // colour the folder's own icon
+    folderRows.push(row);
+
+    // nested children container (built once, revealed on open) — inherits folder icon + colour
     var kids = document.createElement('div');
     kids.className = 'lv-children';
-    AV.forEach(function (spec) { kids.appendChild(makeNested(appTemplate, spec)); });
+    AV.forEach(function (spec) { kids.appendChild(makeNested(appTemplate, spec, tIcon, color)); });
     row.insertAdjacentElement('afterend', kids);
 
     row.addEventListener('click', function () {
@@ -566,6 +597,19 @@
       kids.classList.toggle('lv-show', open);
     });
   });
+
+  // place the expanded-folder divider just after each label, with a gap
+  function placeDividers() {
+    folderRows.forEach(function (row) {
+      var label = row.children[1];
+      if (!label) return;
+      var lr = label.getBoundingClientRect(), rr = row.getBoundingClientRect();
+      row.style.setProperty('--lv-div-left', Math.round(lr.right - rr.left + 16) + 'px');
+    });
+  }
+  placeDividers();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(placeDividers);
+  window.addEventListener('resize', placeDividers);
 })();
 </script>
 </body>
